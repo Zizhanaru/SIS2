@@ -1,0 +1,22 @@
+
+# Dependencies
+node_modules/
+
+# Playwright reports
+playwright-report/
+test-results/
+
+# Environment variables
+.env
+.env.local
+.env.*
+
+# macOS
+.DS_Store
+
+# Editor settings
+.vscode/
+.idea/
+
+# Logs
+*.log
