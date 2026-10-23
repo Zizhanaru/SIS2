@@ -62,11 +62,10 @@ SIS 1/
 
 ### 1. Clone the repository
 
-```bash
-git clone <repository-url>
-cd <repository-folder>
-```
-
+git clone https://github.com/Zizhanaru/SIS2.git
+cd SIS2
+npm install
+npx playwright install
 Replace the placeholders with the actual repository URL and folder name.
 
 ### 2. Install dependencies
