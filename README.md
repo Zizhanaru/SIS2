@@ -1,5 +1,7 @@
 # SIS 2 — Playwright Test Automation
 
+[![Playwright Tests](https://github.com/Zizhanaru/SIS2/actions/workflows/playwright.yml/badge.svg?branch=main)](https://github.com/Zizhanaru/SIS2/actions/workflows/playwright.yml)
+
 ## Project Overview
 
 This project contains automated end-to-end tests for the [Practice Software Testing](https://practicesoftwaretesting.com/) website.
@@ -145,11 +147,42 @@ The user factory generates unique registration credentials, reducing conflicts b
 
 Assertions verify navigation, user feedback, product details, checkout confirmation, and password reset behavior.
 
+## CI
+
+[![Playwright Tests](https://github.com/Zizhanaru/SIS2/actions/workflows/playwright.yml/badge.svg?branch=main)](https://github.com/Zizhanaru/SIS2/actions/workflows/playwright.yml)
+
+**CI system:** GitHub Actions. It is built into GitHub, where the repository already lives, needs no server of its own, is free for public repositories and supports matrices for sharding.
+
+**Pipeline** (`.github/workflows/playwright.yml`):
+- runs on every push and pull request (plus manual `workflow_dispatch`);
+- `npm ci` with the npm cache (`actions/setup-node`, `cache: npm`), Chromium installed with system dependencies;
+- the full Playwright suite (no `--grep`/filters) split into 4 shards (`--shard=i/4`) running in parallel;
+- the `merge-reports` job merges the shards' blob reports into one HTML report and one JUnit file;
+- artefacts: `playwright-report` (HTML), `test-results-N` (traces, screenshots, videos, JUnit), `junit-report`; kept for 14 days.
+
+**CI settings** (`playwright.config.ts`, when `CI=true`): `forbidOnly: true`, `retries: 2`, reporters `list`, `blob`, `junit`, `trace: 'on-first-retry'`.
+
+### Runtime
+
+| Configuration | Total run time | Run tests step (slowest shard) | Run |
+| --- | --- | --- | --- |
+| 1 job, no sharding | X min Y s | X min Y s | [run](link) |
+| 4 shards + merge | X min Y s | X min Y s | [run](link) |
+
+Median of 3 runs via workflow_dispatch. Conclusion: <e.g. sharding cut the test step from A to B; total time dropped less because each shard spends ~1 min on setup (checkout, npm ci, browser install).>
+
+### Running locally
+
+    npm ci
+    npx playwright install --with-deps chromium
+    CI=true npx playwright test
+
 ## Additional Documentation
 
 - `Description.md` — test scenario descriptions
 - `Prompt.md` — AI assistance and development prompts
 - `Review.md` — identified issues, corrections, and code review notes
+- `AI_USAGE_SIS2_CI.md` — AI usage for the CI pipeline (model, prompts, explanations)
 
 ## Notes
 
