@@ -11,11 +11,18 @@ export class ProductPage {
 
   // Open catalog
   async openCatalog() {
-    await this.page.goto('/');
-
-    await expect(this.products.first()).toBeVisible({
-      timeout: 20000
-    });
+    // The public demo site sometimes loads the product list slowly or not at
+    // all on the first try (shared server, many CI requests at once).
+    // Try up to 3 times: open the home page, wait for product cards, reload if empty.
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      await this.page.goto('/');
+      try {
+        await expect(this.products.first()).toBeVisible({ timeout: 15000 });
+        return;
+      } catch (error) {
+        if (attempt === 3) throw error;
+      }
+    }
   }
 
   // Open product by position
