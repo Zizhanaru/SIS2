@@ -162,6 +162,8 @@ Assertions verify navigation, user feedback, product details, checkout confirmat
 
 **CI settings** (`playwright.config.ts`, when `CI=true`): `forbidOnly: true`, `retries: 2`, reporters `list`, `blob`, `junit`, `trace: 'on-first-retry'`.
 
+**Known limitation:** practicesoftwaretesting.com is protected by Cloudflare. On GitHub-hosted runners it sometimes replaces the shop with a "Performing security verification" human check. TC03 detects this page, retries 3 times and, if the runner is still blocked, is reported as **skipped** with that reason (not as a failure). The check is not bypassed. Locally the test runs in full.
+
 ### Runtime
 
 | Configuration | Total run time | Run tests step (slowest shard) | Run |
