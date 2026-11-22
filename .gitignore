@@ -20,3 +20,10 @@ test-results/
 
 # Logs
 *.log
+
+# CI / sharding artefacts
+blob-report/
+all-blob-reports/
+reports/
+.act-artifacts/
+.secrets

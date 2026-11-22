@@ -1,5 +1,5 @@
 
-import { type Page, expect } from '@playwright/test';
+import { type Page, expect, test } from '@playwright/test';
 
 export class ProductPage {
   constructor(private page: Page) {}
@@ -11,11 +11,28 @@ export class ProductPage {
 
   // Open catalog
   async openCatalog() {
-    await this.page.goto('/');
-
-    await expect(this.products.first()).toBeVisible({
-      timeout: 20000
+    // practicesoftwaretesting.com is protected by Cloudflare. On cloud CI runners
+    // (GitHub Actions IPs) it sometimes shows a "Performing security verification"
+    // human check instead of the shop. That check must not be bypassed, so:
+    // wait for either the product list or the check, retry a few times,
+    // and if the site keeps blocking the runner, mark the test as skipped
+    // with a clear reason instead of reporting a false failure.
+    const challenge = this.page.getByRole('heading', {
+      name: /performing security verification/i
     });
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      await this.page.goto('/');
+
+      await expect(this.products.first().or(challenge)).toBeVisible({ timeout: 20000 });
+
+      if (await this.products.first().isVisible()) return;
+
+      // Blocked by the bot check: wait a bit before the next attempt
+      await this.page.waitForTimeout(5000);
+    }
+
+    test.skip(true, 'Blocked by Cloudflare bot verification on the CI runner (not an application defect)');
   }
 
   // Open product by position

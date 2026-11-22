@@ -10,6 +10,9 @@ test('TC03 add product and complete checkout', async ({
   cartPage,
   checkoutPage
 }) => {
+  // Long end-to-end flow (register, login, catalog, cart, checkout) on a public site
+  test.setTimeout(120000);
+
   // 1. Generate a new customer
   const user = freshUser();
 
