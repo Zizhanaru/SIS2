@@ -175,6 +175,8 @@ Single run of each variant on the `ci-pipeline` branch (push event, GitHub-hoste
 
 **Conclusion:** for this suite sharding did **not** make CI faster: the total went from 1 min 27 s to 1 min 44 s, and billed minutes tripled. The suite has only 7 tests, so most of every job is fixed setup (checkout, `npm ci`, Chromium install ≈ 30–40 s — shard 3/4 with two quick tests took 34 s in total). Splitting 7 tests into 4 jobs repeats that setup 4 times, and the slowest shard (registration + login tests against the public demo site) still takes about as long as the whole suite in one job; merging 4 blob reports also takes longer (24 s vs 9 s). Sharding is kept because the assignment requires it and it scales: as the suite grows, the test time per shard drops roughly by 4× while the setup overhead stays constant.
 
+A later 4-shard run on main (after merge) took 1 min 12 s, so run-to-run variance on GitHub runners is about ±30 s; with 7 tests the difference between the two variants is within that noise.
+
 ### Running locally
 
     npm ci
