@@ -20,8 +20,16 @@
 - Ran the suite locally in CI mode (`CI=true npx playwright test`), checked that `test.only` makes the run fail.
 - Pushed to a feature branch, opened a PR, collected run links and timings (1 shard vs 4 shards), filled the README table.
 
+## Problems found by CI and how they were fixed
+The first CI runs were red in shards 1 and 2. CI artefacts (logs, screenshots, `error-context.md`) showed the causes:
+1. **TC02/TC03 login after registration** — `locator.fill` timed out waiting for `getByTestId('email')` on `/auth/login`. After registration the browser could already be signed in, so the login form did not appear. Fix: `LoginPage.open()` clears localStorage, sessionStorage and cookies, reopens `/auth/login` and waits for the email field.
+2. **TC03 catalog after login** — product cards were not found. The failure screenshot showed Cloudflare's "Performing security verification" page: the demo site's bot protection blocks GitHub-hosted runners. The check must not be bypassed. Fix: `ProductPage.openCatalog()` waits for either products or the check, retries 3 times, and otherwise marks the test as **skipped** with an explicit reason. Locally the test runs in full. Documented in README as a known limitation.
+
+Follow-up prompts: shared the CI logs, `error-context.md` and the failure screenshot and asked for step-by-step explanations of each fix.
+
 ## Explanation of key decisions
 - **forbidOnly** — an accidentally committed `test.only` would otherwise run one test and keep CI green.
+- **workers: 1 in CI** — sharding already gives parallelism; one worker per shard matches the verified sequential local run against a shared demo site.
 - **retries: 2 + trace on-first-retry** — flaky tests are reported as flaky, and a trace of the failed attempt is saved.
 - **blob reporter + merge job** — every shard writes its own blob; one job merges them into a single HTML report.
 - **fullyParallel: true** — lets `--shard` split individual tests, not whole files, so shards are balanced.

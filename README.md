@@ -166,12 +166,14 @@ Assertions verify navigation, user feedback, product details, checkout confirmat
 
 ### Runtime
 
-| Configuration | Total run time | Run tests step (slowest shard) | Run |
-| --- | --- | --- | --- |
-| 1 job, no sharding | X min Y s | X min Y s | [run](link) |
-| 4 shards + merge | X min Y s | X min Y s | [run](link) |
+| Configuration | Jobs | Total run time (wall clock) | Slowest test job | Merge reports job | Billed time (sum of jobs) | Run |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 job, no sharding (before) | 1 + merge | **1 min 27 s** | 1 min 11 s | 9 s | 1 min 20 s | [checks for 23d0450](https://github.com/Zizhanaru/SIS2/commit/23d0450/checks) |
+| 4 shards + merge (after) | 4 + merge | **1 min 44 s** | 1 min 13 s (shard 2/4) | 24 s | 4 min 0 s | [checks for f9368cd](https://github.com/Zizhanaru/SIS2/commit/f9368cd/checks) |
 
-Median of 3 runs via workflow_dispatch. Conclusion: <e.g. sharding cut the test step from A to B; total time dropped less because each shard spends ~1 min on setup (checkout, npm ci, browser install).>
+Single run of each variant on the `ci-pipeline` branch (push event, GitHub-hosted `ubuntu-latest`). Workflow-run pages are reachable from the commit checks pages linked above.
+
+**Conclusion:** for this suite sharding did **not** make CI faster: the total went from 1 min 27 s to 1 min 44 s, and billed minutes tripled. The suite has only 7 tests, so most of every job is fixed setup (checkout, `npm ci`, Chromium install ≈ 30–40 s — shard 3/4 with two quick tests took 34 s in total). Splitting 7 tests into 4 jobs repeats that setup 4 times, and the slowest shard (registration + login tests against the public demo site) still takes about as long as the whole suite in one job; merging 4 blob reports also takes longer (24 s vs 9 s). Sharding is kept because the assignment requires it and it scales: as the suite grows, the test time per shard drops roughly by 4× while the setup overhead stays constant.
 
 ### Running locally
 
