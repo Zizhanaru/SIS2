@@ -6,6 +6,18 @@ export class LoginPage {
 
   async open() {
     await this.page.goto('/auth/login');
+
+    // After registration the site may already treat the browser as signed in
+    // and redirect away from the login form. Start every login from a clean,
+    // signed-out state: clear the stored session and open the page again.
+    await this.page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+    await this.page.context().clearCookies();
+    await this.page.goto('/auth/login');
+
+    await expect(this.page.getByTestId('email')).toBeVisible({ timeout: 30000 });
   }
 
   async signIn(email: string, password: string) {
